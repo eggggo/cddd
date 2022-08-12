@@ -8,7 +8,7 @@ from cddd.model_helper import build_models
 from cddd.evaluation import eval_reconstruct, parallel_eval_qsar
 from cddd.hyperparameters import add_arguments, create_hparams
 
-tf.logging.set_verbosity(tf.logging.ERROR)
+tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 FLAGS = None
 
 def train_loop(train_model, eval_model, encoder_model, hparams):
@@ -63,5 +63,4 @@ if __name__ == "__main__":
     PARSER = argparse.ArgumentParser()
     add_arguments(PARSER)
     FLAGS, UNPARSED = PARSER.parse_known_args()
-    tf.app.run(main=main, argv=[sys.argv[0]] + UNPARSED)
-    
+    tf.compat.v1.app.run(main=main, argv=[sys.argv[0]] + UNPARSED)

@@ -39,13 +39,13 @@ def create_model(mode, model_creator, input_pipeline_creator, hparams):
     Returns:
         One model as named tuple with a graph, model and session object.
     """
-    sess_config = tf.ConfigProto(allow_soft_placement=hparams.allow_soft_placement,
-                                 gpu_options=tf.GPUOptions(
+    sess_config = tf.compat.v1.ConfigProto(allow_soft_placement=hparams.allow_soft_placement,
+                                 gpu_options=tf.compat.v1.GPUOptions(
                                      per_process_gpu_memory_fraction=hparams.gpu_mem_frac
                                  ),
                                  inter_op_parallelism_threads=hparams.cpu_threads,
                                  intra_op_parallelism_threads=hparams.cpu_threads)
-    tf.reset_default_graph()
+    tf.compat.v1.reset_default_graph()
     graph = tf.Graph()
     with graph.as_default():
         if mode in ["TRAIN", "EVAL"]:
@@ -59,5 +59,5 @@ def create_model(mode, model_creator, input_pipeline_creator, hparams):
                               hparams=hparams
                              )
         model.build_graph()
-        sess = tf.Session(graph=graph, config=sess_config)
+        sess = tf.compat.v1.Session(graph=graph, config=sess_config)
     return Model(graph=graph, model=model, sess=sess)

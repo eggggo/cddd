@@ -96,7 +96,7 @@ def main_wrapper():
     PARSER = argparse.ArgumentParser()
     add_arguments(PARSER)
     FLAGS, UNPARSED = PARSER.parse_known_args()
-    tf.app.run(main=main, argv=[sys.argv[0]] + UNPARSED)
+    tf.compat.v1.app.run(main=main, argv=[sys.argv[0]] + UNPARSED)
     
 if __name__ == "__main__":
     main_wrapper()

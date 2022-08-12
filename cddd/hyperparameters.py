@@ -2,7 +2,7 @@
 
 import os
 import json
-import tensorflow as tf
+from tensor2tensor.utils.hparam import HParams
 DEFAULT_DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), 'data'))
 
 def add_arguments(parser):
@@ -67,7 +67,7 @@ def add_arguments(parser):
 
 def create_hparams(flags):
     """Create training hparams."""
-    hparams = tf.contrib.training.HParams(
+    hparams = HParams(
         model=flags.model,
         input_pipeline=flags.input_pipeline,
         input_sequence_key=flags.input_sequence_key,

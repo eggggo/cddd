@@ -30,7 +30,7 @@ def dataframe_to_tfrecord(df,
         None
     """
 
-    writer = tf.python_io.TFRecordWriter(tfrecord_file_name)
+    writer = tf.io.TFRecordWriter(tfrecord_file_name)
     if shuffle_first:
         df = df.sample(frac=1).reset_index(drop=True)
     for index, row in df.iterrows():
@@ -210,4 +210,3 @@ def preprocess_list(smiles):
     df["random_smiles"] = df["canonical_smiles"].map(randomize_smile)
     df = create_feature_df(df)
     return df
-    

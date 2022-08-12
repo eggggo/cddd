@@ -80,12 +80,12 @@ class InputPipeline():
             self.dataset = self.dataset.repeat()
         self.dataset = self.dataset.map(self._parse_element, num_parallel_calls=32)
         self.dataset = self.dataset.map(
-            lambda element: tf.py_func(self._process_element,
+            lambda element: tf.compat.v1.py_func(self._process_element,
                                        [element[self.input_sequence_key],
                                         element[self.output_sequence_key]],
                                        [tf.int32, tf.int32, tf.int32, tf.int32]),
             num_parallel_calls=32)
-        self.dataset = self.dataset.apply(tf.contrib.data.group_by_window(
+        self.dataset = self.dataset.apply(tf.data.experimental.group_by_window(
             key_func=lambda in_seq, out_seq, in_len, out_len: self._length_bucket(in_len),
             reduce_func=lambda key, ds: self._pad_batch(
                 ds,
@@ -97,14 +97,14 @@ class InputPipeline():
         ))
         if self.mode == "TRAIN":
             self.dataset = self.dataset.shuffle(buffer_size=self.buffer_size)
-        self.iterator = self.dataset.make_initializable_iterator()
+        self.iterator = tf.compat.v1.data.make_initializable_iterator(self.dataset)
 
     def _parse_element(self, example_proto):
         """Method that parses an element from a tf-record file."""
-        feature_dict = {self.input_sequence_key: tf.FixedLenFeature([], tf.string),
-                        self.output_sequence_key: tf.FixedLenFeature([], tf.string),
+        feature_dict = {self.input_sequence_key: tf.io.FixedLenFeature([], tf.string),
+                        self.output_sequence_key: tf.io.FixedLenFeature([], tf.string),
                         }
-        parsed_features = tf.parse_single_example(example_proto, feature_dict)
+        parsed_features = tf.io.parse_single_example(serialized=example_proto, features=feature_dict)
         element = {name: parsed_features[name] for name in list(feature_dict.keys())}
         return element
 
@@ -237,14 +237,14 @@ class InputPipelineWithFeatures(InputPipeline):
         if self.mode == "TRAIN":
             self.dataset = self.dataset.repeat()
         self.dataset = self.dataset.map(
-            lambda element: tf.py_func(
+            lambda element: tf.compat.v1.py_func(
                 self._process_element,
                 [element[self.input_sequence_key],
                  element[self.output_sequence_key],
                  element[self.features_key]],
                 [tf.int32, tf.int32, tf.int32, tf.int32, tf.float32]),
             num_parallel_calls=32)
-        self.dataset = self.dataset.apply(tf.contrib.data.group_by_window(
+        self.dataset = self.dataset.apply(tf.data.experimental.group_by_window(
             key_func=lambda in_seq, out_seq, in_len, out_len, feat: self._length_bucket(in_len),
             reduce_func=lambda key, ds: self._pad_batch(
                 ds,
@@ -255,15 +255,15 @@ class InputPipelineWithFeatures(InputPipeline):
             window_size=self.batch_size))
         if self.mode == "TRAIN":
             self.dataset = self.dataset.shuffle(buffer_size=self.buffer_size)
-        self.iterator = self.dataset.make_initializable_iterator()
+        self.iterator = tf.compat.v1.data.make_initializable_iterator(self.dataset)
 
     def _parse_element(self, example_proto):
         """Method that parses an element from a tf-record file."""
-        feature_dict = {self.input_sequence_key: tf.FixedLenFeature([], tf.string),
-                        self.output_sequence_key: tf.FixedLenFeature([], tf.string),
-                        self.features_key: tf.FixedLenFeature([self.num_features], tf.float32)
+        feature_dict = {self.input_sequence_key: tf.io.FixedLenFeature([], tf.string),
+                        self.output_sequence_key: tf.io.FixedLenFeature([], tf.string),
+                        self.features_key: tf.io.FixedLenFeature([self.num_features], tf.float32)
                         }
-        parsed_features = tf.parse_single_example(example_proto, feature_dict)
+        parsed_features = tf.io.parse_single_example(serialized=example_proto, features=feature_dict)
         element = {name: parsed_features[name] for name in list(feature_dict.keys())}
         return element
 
@@ -421,4 +421,3 @@ class InputPipelineInferDecode():
     def get_next(self):
         """Helper function to get the next batch from the iterator"""
         return next(self.generator)
-    
